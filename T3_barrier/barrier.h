@@ -10,7 +10,7 @@
 class barrier {
 
 public:
-    explicit barrier(size_t num_threads) : num_threads(num_threads), count_in(0), count_out(0) {}
+    explicit barrier(size_t num_threads_) : num_threads(num_threads_), count_in(0), count_out(0) {}
 
     void enter(){
 
@@ -22,10 +22,10 @@ public:
 
         door_in.notify_all();
 
-        count_in.fetch_add(1);
+        count_in++;
 
         if (count_in == num_threads){
-             count_out.fetch_add(num_threads);
+             count_out += num_threads;
         }
 
         while (count_in != num_threads){
@@ -34,10 +34,10 @@ public:
 
         door_out.notify_all();
 
-        count_out.fetch_sub(1);
+        count_out--;
 
         if (count_out == 0){
-             count_in.fetch_sub(num_threads);
+             count_in -= num_threads;
         }
     }
 
@@ -45,8 +45,8 @@ public:
 private:
     std::size_t num_threads;
     std::mutex current_mutex;
-    std::atomic<std::size_t> count_in;
-    std::atomic<std::size_t> count_out;
+    std::size_t count_in;
+    std::size_t count_out;
     std::condition_variable door_in;
     std::condition_variable door_out;
 };
