@@ -16,10 +16,10 @@ public:
 
     void write_lock(){
         std::unique_lock<std::mutex> lock(gate);
+        ++writers;
         while (writing || readers > 0){
            room_empty.wait(lock);
         }
-        ++writers;
         writing = true;
     }
 
@@ -43,7 +43,7 @@ public:
         std::unique_lock<std::mutex> lock(gate);
         --readers;
         if (readers == 0) 
-            room_empty.notify_one();
+            room_empty.notify_all();
     }
 
 private:
